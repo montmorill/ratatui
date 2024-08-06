@@ -13,65 +13,41 @@
 //! [examples]: https://github.com/ratatui-org/ratatui/blob/main/examples
 //! [examples readme]: https://github.com/ratatui-org/ratatui/blob/main/examples/README.md
 
-use std::{
-    io::{self, stdout},
-    thread::sleep,
-    time::Duration,
-};
+use std::io::{self, stdout};
 
-use indoc::indoc;
-use itertools::izip;
+use crossterm::event::{self, Event};
 use ratatui::{
     backend::{Backend, CrosstermBackend},
     crossterm::terminal::{disable_raw_mode, enable_raw_mode},
-    widgets::Paragraph,
+    layout::{Constraint, Layout},
+    widgets::RatatuiLogo,
     Terminal, TerminalOptions, Viewport,
 };
 
-/// A fun example of using half block characters to draw a logo
-#[allow(clippy::many_single_char_names)]
-fn logo() -> String {
-    let r = indoc! {"
-            ▄▄▄
-            █▄▄▀
-            █  █
-        "};
-    let a = indoc! {"
-             ▄▄
-            █▄▄█
-            █  █
-        "};
-    let t = indoc! {"
-            ▄▄▄
-             █
-             █
-        "};
-    let u = indoc! {"
-            ▄  ▄
-            █  █
-            ▀▄▄▀
-        "};
-    let i = indoc! {"
-            ▄
-            █
-            █
-        "};
-    izip!(r.lines(), a.lines(), t.lines(), u.lines(), i.lines())
-        .map(|(r, a, t, u, i)| format!("{r:5}{a:5}{t:4}{a:5}{t:4}{u:5}{i:5}"))
-        .collect::<Vec<_>>()
-        .join("\n")
-}
-
-fn main() -> io::Result<()> {
-    let mut terminal = init()?;
-    terminal.draw(|frame| frame.render_widget(Paragraph::new(logo()), frame.area()))?;
-    sleep(Duration::from_secs(5));
-    restore()?;
+fn main() -> color_eyre::Result<()> {
+    color_eyre::install()?;
+    let terminal = init_terminal()?;
+    let result = run(terminal);
+    restore_terminal()?;
     println!();
-    Ok(())
+    result
 }
 
-fn init() -> io::Result<Terminal<impl Backend>> {
+fn run(mut terminal: Terminal<impl Backend>) -> Result<(), color_eyre::eyre::Error> {
+    loop {
+        terminal.draw(|frame| {
+            let [top, bottom] =
+                Layout::vertical([Constraint::Length(1), Constraint::Fill(1)]).areas(frame.area());
+            frame.render_widget("Powered by", top);
+            frame.render_widget(RatatuiLogo, bottom);
+        })?;
+        if matches!(event::read()?, Event::Key(_)) {
+            break Ok(());
+        }
+    }
+}
+
+fn init_terminal() -> io::Result<Terminal<impl Backend>> {
     enable_raw_mode()?;
     let options = TerminalOptions {
         viewport: Viewport::Inline(3),
@@ -79,7 +55,7 @@ fn init() -> io::Result<Terminal<impl Backend>> {
     Terminal::with_options(CrosstermBackend::new(stdout()), options)
 }
 
-fn restore() -> io::Result<()> {
+fn restore_terminal() -> io::Result<()> {
     disable_raw_mode()?;
     Ok(())
 }
