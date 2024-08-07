@@ -47,7 +47,7 @@ pub use self::{
     clear::Clear,
     gauge::{Gauge, LineGauge},
     list::{List, ListDirection, ListItem, ListState},
-    logo::RatatuiLogo,
+    logo::{RatatuiLogo, Size as RatatuiLogoSize},
     paragraph::{Paragraph, Wrap},
     scrollbar::{ScrollDirection, Scrollbar, ScrollbarOrientation, ScrollbarState},
     sparkline::{RenderDirection, Sparkline},

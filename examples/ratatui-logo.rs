@@ -20,7 +20,7 @@ use ratatui::{
     backend::{Backend, CrosstermBackend},
     crossterm::terminal::{disable_raw_mode, enable_raw_mode},
     layout::{Constraint, Layout},
-    widgets::RatatuiLogo,
+    widgets::{RatatuiLogo, RatatuiLogoSize},
     Terminal, TerminalOptions, Viewport,
 };
 
@@ -33,13 +33,13 @@ fn main() -> color_eyre::Result<()> {
     result
 }
 
-fn run(mut terminal: Terminal<impl Backend>) -> Result<(), color_eyre::eyre::Error> {
+fn run(mut terminal: Terminal<impl Backend>) -> color_eyre::Result<()> {
     loop {
         terminal.draw(|frame| {
             let [top, bottom] =
                 Layout::vertical([Constraint::Length(1), Constraint::Fill(1)]).areas(frame.area());
             frame.render_widget("Powered by", top);
-            frame.render_widget(RatatuiLogo, bottom);
+            frame.render_widget(RatatuiLogo::new(RatatuiLogoSize::Tiny), bottom);
         })?;
         if matches!(event::read()?, Event::Key(_)) {
             break Ok(());
